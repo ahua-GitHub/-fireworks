@@ -1,0 +1,194 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>新年快乐</title>
+<style>
+body{
+  overflow: hidden;
+  margin: 0;
+}
+h1{
+  position: fixed;
+  top: 30%;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  transform:translateY(-50%);
+  font-family: 'Love Ya Like A Sister', cursive;
+  font-size: 60px;
+  color: #c70012;
+  padding: 0 20px;
+}
+h1 span{
+  position: fixed;
+  left: 0;
+  width: 100%;
+  text-align: center;
+margin-top:30px;
+    font-size:40px;
+}
+</style>
+
+</head>
+<body>
+<h1 id="h1"></h1>
+<canvas></canvas> <!--canvas 画布-->
+
+<script>
+var canvas = document.querySelector("canvas"),
+  ctx = canvas.getContext("2d");
+
+var ww,wh;
+
+// 窗口大小改变时画布大小跟着改变
+function onResize(){
+  ww = canvas.width = window.innerWidth;
+  wh = canvas.height = window.innerHeight;
+}
+// 设置用于笔触的颜色
+ctx.strokeStyle = "red";  
+// 设置用于阴影的模糊级别,大于 1 的正整数，数值越高，模糊程度越大
+ctx.shadowBlur = 25;
+  // 设置用于阴影的颜色
+ctx.shadowColor = "hsla(0, 100%, 60%,0.5)";
+
+// 初始生成的爱心数量
+var precision = 100;
+var hearts = [];
+var mouseMoved = false;
+
+// 在鼠标移动或者手指滑动位置生成爱心
+function onMove(e){
+  mouseMoved = true;
+  // 移动端手指滑动
+  if(e.type === "touchmove"){
+
+    // e.touches[0].clientX鼠标横坐标 e.touches[0].clientY鼠标纵坐标
+    hearts.push(new Heart(e.touches[0].clientX, e.touches[0].clientY));
+    hearts.push(new Heart(e.touches[0].clientX, e.touches[0].clientY));
+  }
+  // pc端鼠标滑动
+  else{
+    // 
+    hearts.push(new Heart(e.clientX, e.clientY));
+    hearts.push(new Heart(e.clientX, e.clientY));
+  }
+}
+
+var Heart = function(x,y){
+  // 没有值就画布内生成随机数
+  this.x = x || Math.random()*ww;
+  this.y = y || Math.random()*wh;
+  this.size = Math.random()*2 + 1;
+  // 阴影模糊度
+  this.shadowBlur = Math.random() * 10;
+  // 速度
+  this.speedX = (Math.random()+0.2-0.6) * 8;
+  this.speedY = (Math.random()+0.2-0.6) * 8;
+  this.speedSize = Math.random()*0.05 + 0.01;
+  this.opacity = 1;
+  this.vertices = [];
+  for (var i = 0; i < precision; i++) {
+    var step = (i / precision - 0.5) * (Math.PI * 2);
+    // 使用心型方程式绘制爱心
+    var vector = {
+      x : (16 * Math.pow(Math.sin(step), 3)),
+      y : -(13 * Math.cos(step) - 5 * Math.cos(2 * step) - 2 * Math.cos(3 * step) - Math.cos(4 * step)) 
+    }
+    // 将生成的爱心添加到数组中
+    this.vertices.push(vector);
+  }
+}
+
+
+// 绘制爱心,实现爱心消失效果
+Heart.prototype.draw = function(){
+  // 改变爱心尺寸
+  this.size -= this.speedSize;
+  // 改变爱心位置
+  this.x += this.speedX;
+  this.y += this.speedY;
+  // 把当前状态（旋转，缩放，颜色等）的一份拷贝压入到一个保存图像状态的栈中
+  ctx.save();
+  // 重新定义画布（0,0）点的位置，之后绘制的图形都基于该点为(0,0)点进行绘制
+  ctx.translate(-1000,this.y);
+  // 缩放
+  ctx.scale(this.size, this.size);
+// 开始绘制
+  ctx.beginPath();
+
+  for (var i = 0; i < precision; i++) {
+    var vector = this.vertices[i];
+    ctx.lineTo(vector.x, vector.y);
+  }
+  ctx.globalAlpha = this.size;
+  ctx.shadowBlur = Math.round((3 - this.size) * 10);
+  ctx.shadowColor = "hsla(0, 100%, 60%,0.5)";
+  // 设置阴影距形状的水平距离
+  ctx.shadowOffsetX = this.x + 1000;
+  ctx.globalCompositeOperation = "screen"
+  //结束绘制
+  ctx.closePath();
+  //填充轮廓
+  ctx.fill()
+  // 上面临时地改变图像状态后， restore()可以恢复以前的值。
+  // 也就是爱心消失后，再次绘制时直接使用上次保存的状态绘制爱心
+  ctx.restore();
+};
+
+
+
+function render(a){
+  requestAnimationFrame(render);
+  hearts.push(new Heart())
+  ctx.clearRect(0,0,ww,wh);
+  for (var i = 0; i < hearts.length; i++) {
+    hearts[i].draw();
+    if(hearts[i].size <= 0){
+      hearts.splice(i,1);
+      i--;
+    }
+  }
+}
+
+
+onResize();
+window.addEventListener("mousemove", onMove);
+window.addEventListener("touchmove", onMove);
+// 缩放窗口时调用
+window.addEventListener("resize", onResize);
+// 每刷新一次调用一次
+requestAnimationFrame(render);
+
+window.onload=function starttime(){
+        time(h1,'2022/2/1');     // 2021年春节时间
+        ptimer = setTimeout(starttime,1000); // 添加计时器
+}
+
+function time(obj,futimg){
+    var nowtime = new Date().getTime() + 1900000; // 现在时间转换为时间戳
+    var futruetime =  new Date(futimg).getTime(); // 未来时间转换为时间戳
+    
+    // 1643385600000
+    // console.log(nowtime,'-------',futruetime)
+
+    var msec = futruetime-nowtime; // 毫秒 未来时间-现在时间
+    // 定时跳转
+    setTimeout("javascript:location.href='demo.html'", msec);
+
+    var time = (msec/1000);  // 毫秒/1000
+    var day = parseInt(time/86400); // 天  24*60*60*1000 
+    var hour = parseInt(time/3600)-24*day;    // 小时 60*60 总小时数-过去的小时数=现在的小时数 
+    var minute = parseInt(time%3600/60); // 分 -(day*24) 以60秒为一整份 取余 剩下秒数 秒数/60 就是分钟数
+    var second = parseInt(time%60);  // 以60秒为一整份 取余 剩下秒数
+    obj.innerHTML="<p2>小王新年快乐<br>I can never let you go<br></p2>"+"<span>距离2022年还有:<span><br>"+day+"天"+hour+"小时"+minute+"分"+second+"秒"+"<br>"
+    return true;
+}
+
+
+</script>
+<audio autoplay="autoplay" loop="loop" preload="auto"     src="http://music.163.com/song/media/outer/url?id=1851244378.mp3">       
+</audio>
+</body>
+</html>
